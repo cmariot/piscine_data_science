@@ -1,19 +1,18 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    automatic_table.py                                :+:      :+:    :+:    #
+#    faster_automatic_table.py                         :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2023/10/18 17:27:22 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/18 17:27:23 by cmariot         ###   ########.fr        #
+#    Created: 2023/10/18 23:07:01 by cmariot          #+#    #+#              #
+#    Updated: 2023/10/18 23:07:02 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
 import os
-import pandas
 from dotenv import load_dotenv
-import sqlalchemy
+import psycopg2
 
 
 def load_env(dotenv_path: str) -> tuple:
@@ -59,51 +58,60 @@ def get_files_list(directory: str) -> list[str]:
     return csv_list
 
 
+def create_query(table_name: str, path: str) -> str:
+    """
+    Create table 'table_name' with the data from the CSV file 'path' in the
+    docker container.
+    """
+    query = (
+        f"""
+        DROP TABLE IF EXISTS {table_name};
+        CREATE TABLE {table_name}
+        (
+            event_time      TIMESTAMP WITH TIME ZONE NOT NULL,
+            event_type      VARCHAR(32),
+            product_id      INTEGER,
+            price           FLOAT,
+            user_id         BIGINT,
+            user_session    UUID
+        );
+        COPY {table_name} FROM '{path}' DELIMITER ',' CSV HEADER;
+        """
+    )
+    print(query)
+    return query
+
+
 def main():
 
     (host, database, username, password, port) = load_env(
-        "../postgresql_docker/.env_postgres"
+        "../../postgresql_docker/.env_postgres"
     )
 
-    directory_path = "../data/customer"
-    csv_names_list = get_files_list(directory_path)
-
-    table_dtype = {
-        "event_time": sqlalchemy.DateTime,
-        "event_type": sqlalchemy.String,
-        "product_id": sqlalchemy.Integer,
-        "price": sqlalchemy.Float,
-        "user_id": sqlalchemy.BigInteger,
-        "user_session": sqlalchemy.Uuid,
-    }
-
-    engine = sqlalchemy.create_engine(
-        f"postgresql://{username}:{password}@{host}:{port}/{database}",
-        echo=True,
+    connection = psycopg2.connect(
+        host=host,
+        database=database,
+        user=username,
+        password=password,
+        port=port
     )
 
-    for csv_name in csv_names_list:
+    data_dirpath_on_container = "/subject/customer/"
+    filenames = get_files_list("../../subject/customer")
+    table_names = [file[:-4] for file in filenames]
+    file_paths = [data_dirpath_on_container + file for file in filenames]
 
-        if csv_name.endswith(".csv") is False:
-            raise ValueError("The file name is not a CSV file.")
-
-        file_path = os.path.join(directory_path, csv_name)
-        file_data = pandas.read_csv(file_path)
-        table_name = csv_name[:-4]
-
-        file_data.to_sql(
-            name=table_name,
-            con=engine,
-            if_exists="replace",
-            index=False,
-            dtype=table_dtype,
-        )
-
-    engine.dispose()
+    cursor = connection.cursor()
+    for table_name, file_path in zip(table_names, file_paths):
+        query: str = create_query(table_name, file_path)
+        cursor.execute(query)
+        connection.commit()
+    cursor.close()
+    connection.close()
 
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as error:
-        print(f"Error: {error}")
+        print("Error:", error)

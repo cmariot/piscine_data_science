@@ -11,9 +11,8 @@
 # *************************************************************************** #
 
 import os
-import pandas
 from dotenv import load_dotenv
-import sqlalchemy
+import psycopg2
 
 
 def load_env(dotenv_path: str) -> tuple:
@@ -41,42 +40,51 @@ def load_env(dotenv_path: str) -> tuple:
     return environment_variables
 
 
+def create_query(table_name: str, path: str) -> str:
+    """
+    Create table 'table_name' with the data from the CSV file 'path' in the
+    docker container.
+    """
+    query = (
+        f"""
+        DROP TABLE IF EXISTS {table_name};
+        CREATE TABLE {table_name}
+        (
+            product_id      INTEGER,
+            category_id     BIGINT,
+            category_code   VARCHAR(255),
+            brand           VARCHAR(255)
+        );
+        COPY {table_name} FROM '{path}' DELIMITER ',' CSV HEADER;
+        """
+    )
+    print(query)
+    return query
+
+
 def main():
 
     (host, database, username, password, port) = load_env(
-        "../postgresql_docker/.env_postgres"
+        "../../postgresql_docker/.env_postgres"
     )
 
-    directory_path = "../data/item"
-    csv_name = "item.csv"
-    file_path = os.path.join(directory_path, csv_name)
-
-    if csv_name.endswith(".csv") is False:
-        raise ValueError("The file name is not a CSV file.")
-
-    file_data = pandas.read_csv(file_path)
-    table_name = csv_name[:-4]
-    table_dtype = {
-        "product_id": sqlalchemy.Integer,
-        "category_id": sqlalchemy.BigInteger,
-        "category_code": sqlalchemy.String,
-        "brand": sqlalchemy.String,
-    }
-
-    engine = sqlalchemy.create_engine(
-        f"postgresql://{username}:{password}@{host}:{port}/{database}",
-        echo=True,
+    connection = psycopg2.connect(
+        host=host,
+        database=database,
+        user=username,
+        password=password,
+        port=port
     )
 
-    file_data.to_sql(
-        name=table_name,
-        con=engine,
-        if_exists="replace",
-        index=False,
-        dtype=table_dtype,
+    cursor = connection.cursor()
+    query: str = create_query(
+        table_name="item",
+        path="/subject/item/item.csv"
     )
-
-    engine.dispose()
+    cursor.execute(query)
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
 if __name__ == "__main__":
