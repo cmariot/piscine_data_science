@@ -1,0 +1,36 @@
+# Docker compose file for running a postgresql database
+
+version: "3.1"
+
+services:
+    postgres:
+        container_name: postgres
+        image: postgres
+        restart: always
+        env_file: .env_postgres
+        ports:
+            - "5432:5432"
+        networks:
+            - database_network
+        volumes:
+            - ./postgres_data:/var/lib/postgresql/data
+            - ../subject:/subject
+
+    pgadmin:
+        container_name: pgadmin
+        image: dpage/pgadmin4
+        restart: always
+        env_file: .env_pgadmin
+        ports:
+            - "5050:80"
+        networks:
+            - database_network
+
+networks:
+    database_network: {}
+
+volumes:
+    postgres_data:
+        driver: local
+    data_csv:
+        driver: local
