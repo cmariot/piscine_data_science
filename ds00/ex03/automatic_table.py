@@ -61,16 +61,13 @@ def get_files_list(directory: str) -> list[str]:
 
 def main():
 
-    # Environment variables used to connect to the database.
     (host, database, username, password, port) = load_env(
         "../postgresql_docker/.env_postgres"
     )
 
-    # Get the list of the CSV files in the directory.
     directory_path = "../data/customer"
     csv_names_list = get_files_list(directory_path)
 
-    # Create a dictionary with the column names and the column types.
     table_dtype = {
         "event_time": sqlalchemy.DateTime,
         "event_type": sqlalchemy.String,
@@ -80,13 +77,11 @@ def main():
         "user_session": sqlalchemy.Uuid,
     }
 
-    # Create the engine and connect to the database.
     engine = sqlalchemy.create_engine(
         f"postgresql://{username}:{password}@{host}:{port}/{database}",
         echo=True,
     )
 
-    # Create a table for each CSV file.
     for csv_name in csv_names_list:
 
         if csv_name.endswith(".csv") is False:
