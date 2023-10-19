@@ -1,12 +1,12 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    faster_automatic_table.py                         :+:      :+:    :+:    #
+#    automatic_table.py                                :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 23:07:01 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/18 23:07:02 by cmariot         ###   ########.fr        #
+#    Updated: 2023/10/19 22:53:40 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -65,8 +65,7 @@ def create_query(table_name: str, path: str) -> str:
     """
     query = (
         f"""
-        DROP TABLE IF EXISTS {table_name};
-        CREATE TABLE {table_name}
+        CREATE TABLE IF NOT EXISTS {table_name}
         (
             event_time      TIMESTAMP WITH TIME ZONE NOT NULL,
             event_type      VARCHAR(32),

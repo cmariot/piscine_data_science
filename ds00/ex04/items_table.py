@@ -1,12 +1,12 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    item_table.py                                     :+:      :+:    :+:    #
+#    items_table.py                                    :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
 #    Created: 2023/10/18 17:36:36 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/18 17:36:40 by cmariot         ###   ########.fr        #
+#    Updated: 2023/10/19 23:13:31 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -48,7 +48,6 @@ def create_query(table_name: str, path: str) -> str:
     query = (
         f"""
         DROP TABLE IF EXISTS {table_name};
-        DROP TABLE IF EXISTS item;
         CREATE TABLE {table_name}
         (
             product_id      INTEGER,

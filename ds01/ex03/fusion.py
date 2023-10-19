@@ -45,42 +45,25 @@ def create_query() -> str:
 
     query = (
         """
-        -- Create a backup table of items named "items_with_duplicates"
-        CREATE TABLE IF NOT EXISTS items_with_duplicates AS
-        SELECT * FROM items;
-
-        -- Create a temporary table named "unique_items" with the distinct rows
-        -- of the "items" table
-        CREATE TEMP TABLE unique_items AS
-            SELECT
-                product_id,
-                COALESCE(MAX(category_id), NULL) AS category_id,
-                COALESCE(MAX(category_code), NULL) AS category_code,
-                COALESCE(MAX(brand), NULL) AS brand
-            FROM items
-            GROUP BY product_id;
-
-        -- Truncate the "items" table and insert the rows from the
-        -- "unique_items" table in the "items" table
-        TRUNCATE items;
-        INSERT INTO items SELECT * FROM unique_items;
-        DROP TABLE unique_items;
-
-        -- Add new columns to the customers table if they don't already exist
         ALTER TABLE customers
-            ADD COLUMN IF NOT EXISTS category_id BIGINT,
-            ADD COLUMN IF NOT EXISTS category_code VARCHAR(255),
-            ADD COLUMN IF NOT EXISTS brand VARCHAR(255);
+            ADD COLUMN category_id    BIGINT,
+            ADD COLUMN category_code  VARCHAR(255),
+            ADD COLUMN brand          VARCHAR(255);
 
-        -- Update the customers table with data from the items table
         UPDATE customers
             SET
-                category_id = items.category_id,
-                category_code = items.category_code,
-                brand = items.brand
-            FROM items
-            WHERE customers.product_id = items.product_id;
-
+                category_id = tmp_items.category_id,
+                category_code = tmp_items.category_code,
+                brand = tmp_items.brand
+            FROM (
+                SELECT
+                    product_id,
+                    COALESCE(MAX(category_id), NULL) AS category_id,
+                    COALESCE(MAX(category_code), NULL) AS category_code,
+                    COALESCE(MAX(brand), NULL) AS brand
+                FROM items GROUP BY product_id
+            ) AS tmp_items
+            WHERE customers.product_id = tmp_items.product_id;
         """
     )
     print(query)
