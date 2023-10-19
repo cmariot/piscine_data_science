@@ -48,6 +48,7 @@ def create_query(table_name: str, path: str) -> str:
     query = (
         f"""
         DROP TABLE IF EXISTS {table_name};
+        DROP TABLE IF EXISTS item;
         CREATE TABLE {table_name}
         (
             product_id      INTEGER,
@@ -78,7 +79,7 @@ def main():
 
     cursor = connection.cursor()
     query: str = create_query(
-        table_name="item",
+        table_name="items",
         path="/subject/item/item.csv"
     )
     cursor.execute(query)
