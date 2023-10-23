@@ -64,7 +64,7 @@ def create_query() -> str:
                 FROM customers
         );
 
-        TRUNCATE customers;
+        TRUNCATE TABLE customers;
 
         INSERT INTO customers
         (

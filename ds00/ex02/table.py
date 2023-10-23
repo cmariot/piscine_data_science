@@ -1,12 +1,12 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    remove_duplicates.py                              :+:      :+:    :+:    #
+#    table.py                                          :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2023/10/18 21:00:55 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/18 21:00:56 by cmariot         ###   ########.fr        #
+#    Created: 2023/10/21 11:01:56 by cmariot          #+#    #+#              #
+#    Updated: 2023/10/21 11:02:04 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
@@ -43,12 +43,11 @@ def load_env(dotenv_path: str) -> tuple:
 def create_query(table_name: str, path: str) -> str:
     """
     Create table 'table_name' with the data from the CSV file 'path' in the
-    docker container.
+    docker container and copy the data from the CSV file to the table.
     """
     query = (
         f"""
-        DROP TABLE IF EXISTS {table_name};
-        CREATE TABLE {table_name}
+        CREATE TABLE IF NOT EXISTS {table_name}
         (
             event_time      TIMESTAMP WITH TIME ZONE NOT NULL,
             event_type      VARCHAR(32),
@@ -70,6 +69,11 @@ def main():
         "../../postgresql_docker/.env_postgres"
     )
 
+    query: str = create_query(
+        table_name="data_2022_oct",
+        path="/subject/customer/data_2022_oct.csv"
+    )
+
     connection = psycopg2.connect(
         host=host,
         database=database,
@@ -79,10 +83,6 @@ def main():
     )
 
     cursor = connection.cursor()
-    query: str = create_query(
-        table_name="data_2022_oct",
-        path="/subject/customer/data_2022_oct.csv"
-    )
     cursor.execute(query)
     connection.commit()
     cursor.close()

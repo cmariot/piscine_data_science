@@ -61,7 +61,7 @@ def get_files_list(directory: str) -> list[str]:
 def create_query(table_name: str, path: str) -> str:
     """
     Create table 'table_name' with the data from the CSV file 'path' in the
-    docker container.
+    docker container and copy the data from the CSV file to the table.
     """
     query = (
         f"""

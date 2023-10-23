@@ -1,0 +1,6 @@
+Number of lines in each csv, number of expected lines in customers table :
+3_533_286 + 4_635_837 + 4_102_283 + 4_264_752 = 16_536_158 (with duplicates)
+
+After removing duplicates, number of lines in customers table :
+15_667_350
+

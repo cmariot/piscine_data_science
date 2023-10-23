@@ -43,12 +43,11 @@ def load_env(dotenv_path: str) -> tuple:
 def create_query(table_name: str, path: str) -> str:
     """
     Create table 'table_name' with the data from the CSV file 'path' in the
-    docker container.
+    docker container and copy the data from the CSV file to the table.
     """
     query = (
         f"""
-        DROP TABLE IF EXISTS {table_name};
-        CREATE TABLE {table_name}
+        CREATE TABLE IF NOT EXISTS {table_name}
         (
             product_id      INTEGER,
             category_id     BIGINT,

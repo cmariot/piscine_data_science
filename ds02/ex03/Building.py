@@ -1,19 +1,20 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    fusion.py                                         :+:      :+:    :+:    #
+#    Building.py                                       :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2023/10/19 12:13:38 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/19 12:13:43 by cmariot         ###   ########.fr        #
+#    Created: 2023/10/22 11:43:25 by cmariot          #+#    #+#              #
+#    Updated: 2023/10/22 11:43:27 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
-
 
 import os
 from dotenv import load_dotenv
 import psycopg2
+import matplotlib.pyplot as plt
+import pandas
 
 
 def load_env(dotenv_path: str) -> tuple:
@@ -42,36 +43,24 @@ def load_env(dotenv_path: str) -> tuple:
 
 
 def create_query() -> str:
+    """
+    """
 
     query = (
         """
-        ALTER TABLE customers
-            ADD COLUMN category_id    BIGINT,
-            ADD COLUMN category_code  VARCHAR(255),
-            ADD COLUMN brand          VARCHAR(255);
-
-        UPDATE customers
-            SET
-                category_id = unique_items.category_id,
-                category_code = unique_items.category_code,
-                brand = unique_items.brand
-            FROM (
-                SELECT 	product_id,
-                        MAX(category_id) AS category_id,
-                        MAX(category_code) AS category_code,
-                        MAX(brand) AS brand
-                FROM items
-                GROUP BY product_id
-            ) AS unique_items
-            WHERE customers.product_id = unique_items.product_id;
+        SELECT
+            COUNT(user_id) AS frequency
+            FROM customers
+                WHERE event_type = 'purchase'
+                GROUP BY user_id
+                HAVING COUNT(user_id) < 40;
         """
     )
     print(query)
     return query
 
 
-def main():
-
+def fetch_data() -> list:
     (host, database, username, password, port) = load_env(
         "../../postgresql_docker/.env_postgres"
     )
@@ -84,13 +73,38 @@ def main():
         port=port
     )
 
-    query: str = create_query()
-
+    query = create_query()
     cursor = connection.cursor()
     cursor.execute(query)
-    connection.commit()
+    data = cursor.fetchall()
     cursor.close()
     connection.close()
+
+    return data
+
+
+def main():
+
+    data = fetch_data()
+
+    dataframe = pandas.DataFrame(data, columns=['frequency'])
+    # Plot a bar chart with the number of orders according to the frequency
+
+    print(dataframe)
+
+    # x : Frequency : count of orders per customer
+    x = dataframe['frequency']
+
+    plt.title("Frequency distribution of the number of orders per customer")
+
+    plt.xlabel("Number of orders")
+    plt.ylabel("Count of customers")
+
+    plt.hist(x, bins=5, edgecolor='white')
+
+    plt.grid(alpha=0.75)
+
+    plt.show()
 
 
 if __name__ == "__main__":

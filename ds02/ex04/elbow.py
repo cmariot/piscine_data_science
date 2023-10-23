@@ -1,19 +1,24 @@
 # *************************************************************************** #
 #                                                                             #
 #                                                        :::      ::::::::    #
-#    fusion.py                                         :+:      :+:    :+:    #
+#    elbow.py                                          :+:      :+:    :+:    #
 #                                                    +:+ +:+         +:+      #
 #    By: cmariot <cmariot@student.42.fr>           +#+  +:+       +#+         #
 #                                                +#+#+#+#+#+   +#+            #
-#    Created: 2023/10/19 12:13:38 by cmariot          #+#    #+#              #
-#    Updated: 2023/10/19 12:13:43 by cmariot         ###   ########.fr        #
+#    Created: 2023/10/23 17:35:45 by cmariot          #+#    #+#              #
+#    Updated: 2023/10/23 17:35:46 by cmariot         ###   ########.fr        #
 #                                                                             #
 # *************************************************************************** #
 
+# Use of the elbow method to find the optimal number of clusters for
+# the k-means algorithm.
 
 import os
 from dotenv import load_dotenv
 import psycopg2
+import pandas
+
+# from sklearn.cluster import KMeans
 
 
 def load_env(dotenv_path: str) -> tuple:
@@ -45,33 +50,14 @@ def create_query() -> str:
 
     query = (
         """
-        ALTER TABLE customers
-            ADD COLUMN category_id    BIGINT,
-            ADD COLUMN category_code  VARCHAR(255),
-            ADD COLUMN brand          VARCHAR(255);
-
-        UPDATE customers
-            SET
-                category_id = unique_items.category_id,
-                category_code = unique_items.category_code,
-                brand = unique_items.brand
-            FROM (
-                SELECT 	product_id,
-                        MAX(category_id) AS category_id,
-                        MAX(category_code) AS category_code,
-                        MAX(brand) AS brand
-                FROM items
-                GROUP BY product_id
-            ) AS unique_items
-            WHERE customers.product_id = unique_items.product_id;
+        SELECT * FROM customers;
         """
     )
     print(query)
     return query
 
 
-def main():
-
+def fetch_data() -> list:
     (host, database, username, password, port) = load_env(
         "../../postgresql_docker/.env_postgres"
     )
@@ -84,13 +70,33 @@ def main():
         port=port
     )
 
-    query: str = create_query()
-
+    query = create_query()
     cursor = connection.cursor()
     cursor.execute(query)
-    connection.commit()
+    data = cursor.fetchall()
     cursor.close()
     connection.close()
+
+    return data
+
+
+def main():
+
+    data = fetch_data()
+
+    customers = pandas.DataFrame(
+        data,
+        columns=[
+            "event_time",
+            "event_type",
+            "product_id",
+            "price",
+            "user_id",
+            "user_session"
+        ]
+    )
+
+    print(customers.head())
 
 
 if __name__ == "__main__":
