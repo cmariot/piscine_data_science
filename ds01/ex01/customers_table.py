@@ -68,9 +68,8 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
     cursor.execute(
         """
         SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-            AND table_type = 'BASE TABLE';
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
         """
     )
     database_table_names = cursor.fetchall()
@@ -99,7 +98,7 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
 
     query = (
         f"""
-        CREATE TABLE customers AS
+        CREATE TABLE IF NOT EXISTS customers AS
         (
             {select_statement}
         );

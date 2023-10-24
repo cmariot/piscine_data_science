@@ -65,7 +65,8 @@ def create_query(table_name: str, path: str) -> str:
     """
     query = (
         f"""
-        CREATE TABLE IF NOT EXISTS {table_name}
+        DROP TABLE IF EXISTS {table_name};
+        CREATE TABLE {table_name}
         (
             event_time      TIMESTAMP WITH TIME ZONE NOT NULL,
             event_type      VARCHAR(32),

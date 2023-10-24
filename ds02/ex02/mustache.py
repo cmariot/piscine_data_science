@@ -141,6 +141,10 @@ def main():
     # TODO : Last box_plot, but I don't know which data to use now.
     # Box plot with the average basket price per user
 
+    # SELECT user_id, SUM(price), nb_purchases from customers
+    # WHERE event_type = 'purchase'
+    # GROUP BY user_id
+    # ORDER BY user_id ASC;
 
 if __name__ == "__main__":
     try:
