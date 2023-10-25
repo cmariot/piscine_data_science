@@ -49,11 +49,12 @@ def create_query() -> str:
     query = (
         """
         SELECT
-            COUNT(user_id) AS frequency
-            FROM customers
-                WHERE event_type = 'purchase'
-                GROUP BY user_id
-                HAVING COUNT(user_id) < 40;
+            user_id,
+            SUM(price) AS n_purchase
+        FROM customers
+        WHERE event_type = 'purchase' AND event_time < '2023-02-01'
+        GROUP BY user_id
+        HAVING SUM(price) <= 250;
         """
     )
     print(query)
@@ -87,7 +88,7 @@ def main():
 
     data = fetch_data()
 
-    dataframe = pandas.DataFrame(data, columns=['frequency'])
+    dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
     # Plot a bar chart with the number of orders according to the frequency
 
     print(dataframe)

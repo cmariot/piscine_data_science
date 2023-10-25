@@ -42,7 +42,7 @@ def load_env(dotenv_path: str) -> tuple:
     return environment_variables
 
 
-def create_query() -> str:
+def create_query_1() -> str:
 
     query = (
         """
@@ -58,7 +58,23 @@ def create_query() -> str:
     return query
 
 
-def fetch_data() -> list:
+def create_query_2() -> str:
+
+    query = (
+        """
+        SELECT  user_id,
+                SUM(price),
+                COUNT(event_time)
+        FROM customers
+        WHERE event_type = 'purchase'
+        GROUP BY user_id, event_time;
+        """
+    )
+    print(query)
+    return query
+
+
+def fetch_data(index: int) -> list:
     (host, database, username, password, port) = load_env(
         "../../postgresql_docker/.env_postgres"
     )
@@ -71,9 +87,13 @@ def fetch_data() -> list:
         port=port
     )
 
-    query = create_query()
+    query = {
+        1: create_query_1,
+        2: create_query_2
+    }
+
     cursor = connection.cursor()
-    cursor.execute(query)
+    cursor.execute(query[index]())
     data = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -124,30 +144,65 @@ def box_plot_without_outliers(dataframe: pandas.DataFrame) -> None:
 
 def main():
 
-    data = fetch_data()
+    # data = fetch_data(1)
 
-    complete_df = pandas.DataFrame(
-        data,
-        columns=['event_time', 'price', 'user_id']
-    )
+    # complete_df = pandas.DataFrame(
+    #     data,
+    #     columns=['event_time', 'price', 'user_id']
+    # )
 
-    dataframe = complete_df["price"]
-    print(dataframe.describe())
+    # dataframe = complete_df["price"]
+    # print(dataframe.describe())
 
-    box_plot_with_outliers(dataframe)
+    # box_plot_with_outliers(dataframe)
 
-    box_plot_without_outliers(dataframe)
+    # box_plot_without_outliers(dataframe)
 
     # TODO : Last box_plot, but I don't know which data to use now.
     # Box plot with the average basket price per user
 
-    # SELECT user_id, SUM(price), nb_purchases from customers
-    # WHERE event_type = 'purchase'
-    # GROUP BY user_id
-    # ORDER BY user_id ASC;
+    data = fetch_data(2)
+
+    dataframe = pandas.DataFrame(
+        data,
+        columns=["id", 'sum', 'count']
+    )
+
+    plt.title("Average basket price per user")
+    plt.boxplot(
+        x=dataframe["sum"] / dataframe["count"],  # Array to be plotted.
+        vert=False,             # Vertical or horizontal.
+        patch_artist=True,      # Fill with color.
+        showfliers=False,       # Show the outliers.
+        labels=["Purchase"],    # Tick labels.
+        autorange=True,         # Automatic range.
+    )
+    plt.show()
+
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as error:
         print("Error:", error)
+
+
+# Act like my data analyst assistant.
+
+# We want to plot a box plot of the average basket_price per user.
+# Available table : customers with different columns :
+# - event_time : date of the event
+# - event_type : type of event (view, cart, remove from cart, purchase)
+# - product_id : id of the product assiociated with the event
+# - price : price of ONE product associated with the event
+# - user_id : id of the user who made the action
+# - user_session : uuid of the user session
+
+# A basket is defined as the whole products that are in the queue and
+# associated with an user_id  when an user makes a purchase.
+
+# Sum of the prices of this basket
+# / total number of baskets
+# = average basket price per user
+
+# Makes a Postgresql query to get the usefull data in my table customers.

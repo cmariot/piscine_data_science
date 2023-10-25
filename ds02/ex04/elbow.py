@@ -17,8 +17,9 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 import pandas
+import matplotlib.pyplot as plt
 
-# from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans
 
 
 def load_env(dotenv_path: str) -> tuple:
@@ -97,6 +98,27 @@ def main():
     )
 
     print(customers.head())
+
+    inertia = []
+    max_clusters = 10
+    for n_clusters in range(1, max_clusters):
+
+        print(f"Clustering step {n_clusters}/{max_clusters}")
+
+        kmean = KMeans(
+            n_clusters=n_clusters,
+            max_iter=1000,
+
+        )
+        kmean.fit(customers)
+        inertia.append(kmean.inertia_)
+
+    # Plot the inertia depending on the number of clusters
+    # to find the optimal number of clusters
+    # Elbow method
+
+    plt.plot(range(1, max_clusters), inertia)
+    plt.show()
 
 
 if __name__ == "__main__":
