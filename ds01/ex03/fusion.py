@@ -36,7 +36,7 @@ def load_env(dotenv_path: str) -> tuple:
     if any(variable is None for variable in environment_variables):
         raise ValueError(
             "One or more config variables are missing.\n" +
-            "Please check the .env_postgres file."
+            f"Please check the {dotenv_path} file."
         )
     return environment_variables
 

@@ -56,7 +56,7 @@ def create_query(table_name: str, path: str) -> str:
             user_id         BIGINT,
             user_session    UUID
         );
-        COPY {table_name} FROM '{path}' DELIMITER ',' CSV HEADER;
+        COPY {table_name} FROM '{path}' CSV HEADER;
         """
     )
     print(query)

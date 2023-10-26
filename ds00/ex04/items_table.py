@@ -54,7 +54,7 @@ def create_query(table_name: str, path: str) -> str:
             category_code   VARCHAR(255),
             brand           VARCHAR(255)
         );
-        COPY {table_name} FROM '{path}' DELIMITER ',' CSV HEADER;
+        COPY {table_name} FROM '{path}' CSV HEADER;
         """
     )
     print(query)
@@ -75,11 +75,12 @@ def main():
         port=port
     )
 
-    cursor = connection.cursor()
     query: str = create_query(
         table_name="items",
         path="/subject/item/item.csv"
     )
+
+    cursor = connection.cursor()
     cursor.execute(query)
     connection.commit()
     cursor.close()

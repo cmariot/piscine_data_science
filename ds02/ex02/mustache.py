@@ -62,13 +62,52 @@ def create_query_2() -> str:
 
     query = (
         """
-        SELECT  user_id,
-                SUM(price),
-                COUNT(event_time)
-        FROM customers
-        WHERE event_type = 'purchase'
-        GROUP BY user_id, event_time;
+        WITH basket_prices AS (
+            SELECT
+                user_id,
+                SUM(price) AS purchase_prices
+            FROM
+                customers
+            WHERE
+                event_type = 'purchase'
+            GROUP BY
+                user_id, user_session
+        ),
+        average_basket_prices AS (
+            SELECT
+                user_id,
+                AVG(purchase_prices) AS avg_basket_price
+            FROM
+                basket_prices
+            GROUP BY
+                user_id
+        )
+        SELECT
+            user_id,
+            avg_basket_price
+        FROM
+            average_basket_prices;
+
         """
+        # """
+        # ALTER TABLE customers
+        # ADD COLUMN avg_basket_price FLOAT;
+
+        # UPDATE customers
+        # SET avg_basket_price = subquery.avg_basket_price
+        # FROM (
+        #     SELECT
+        #         user_id,
+        #         SUM(price) / COUNT(DISTINCT user_session) AS avg_basket_price
+        #     FROM customers
+        #     WHERE
+        #         event_type = 'purchase' AND
+        #         event_time < '2023-02-01' AND
+        #         price > 0
+        #     GROUP BY user_id
+        # ) AS subquery
+        # WHERE customers.user_id = subquery.user_id;
+        # """
     )
     print(query)
     return query
@@ -165,12 +204,12 @@ def main():
 
     dataframe = pandas.DataFrame(
         data,
-        columns=["id", 'sum', 'count']
+        columns=['id', 'avg']
     )
 
     plt.title("Average basket price per user")
     plt.boxplot(
-        x=dataframe["sum"] / dataframe["count"],  # Array to be plotted.
+        x=dataframe["avg"],     # Array to be plotted.
         vert=False,             # Vertical or horizontal.
         patch_artist=True,      # Fill with color.
         showfliers=False,       # Show the outliers.
@@ -189,20 +228,18 @@ if __name__ == "__main__":
 
 # Act like my data analyst assistant.
 
-# We want to plot a box plot of the average basket_price per user.
-# Available table : customers with different columns :
+# I want to plot a box plot of the average basket_price per customer.
+# My data is stored in a postgresql database,
+# the customers table has different columns :
 # - event_time : date of the event
 # - event_type : type of event (view, cart, remove from cart, purchase)
 # - product_id : id of the product assiociated with the event
-# - price : price of ONE product associated with the event
+# - price : price of ONE product associated with an event
 # - user_id : id of the user who made the action
 # - user_session : uuid of the user session
 
-# A basket is defined as the whole products that are in the queue and
-# associated with an user_id  when an user makes a purchase.
-
-# Sum of the prices of this basket
-# / total number of baskets
-# = average basket price per user
-
-# Makes a Postgresql query to get the usefull data in my table customers.
+# Makes a Postgresql query to get the average basket_price per customer with
+# the customers table.
+# First you must you must compute the basket price based on the price of the
+# products associated with the purchase events.
+# Then you must compute the average basket price per customer.

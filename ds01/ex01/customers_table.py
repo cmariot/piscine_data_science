@@ -39,7 +39,7 @@ def load_env(dotenv_path: str) -> tuple:
     if any(variable is None for variable in environment_variables):
         raise ValueError(
             "One or more config variables are missing.\n" +
-            "Please check the .env_postgres file."
+            f"Please check the {dotenv_path} file."
         )
     return environment_variables
 
@@ -73,7 +73,6 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
         """
     )
     database_table_names = cursor.fetchall()
-
     if len(database_table_names) == 0:
         raise ValueError("The database is empty.")
 
@@ -82,7 +81,6 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
         table[0] for table in database_table_names
         if match_pattern(table[0])
     ]
-
     if len(table_names) == 0:
         raise ValueError("There are no tables matching the pattern.")
 
@@ -98,7 +96,8 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
 
     query = (
         f"""
-        CREATE TABLE IF NOT EXISTS customers AS
+        DROP TABLE IF EXISTS customers;
+        CREATE TABLE customers AS
         (
             {select_statement}
         );
@@ -107,8 +106,10 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
 
     print(query)
 
+    # The query looks like this:
+
     # DROP TABLE IF EXISTS customers;
-    # CREATE TABLE customers AS
+    # CREATE TABLE IF NOT EXISTS customers AS
     # (
     #     SELECT * FROM data_2022_oct
     # )

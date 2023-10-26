@@ -40,7 +40,7 @@ def load_env(dotenv_path: str) -> tuple:
     if any(variable is None for variable in environment_variables):
         raise ValueError(
             "One or more config variables are missing.\n" +
-            "Please check the .env_postgres file."
+            f"Please check the {dotenv_path} file."
         )
     return environment_variables
 
@@ -48,6 +48,9 @@ def load_env(dotenv_path: str) -> tuple:
 def create_query() -> str:
     """
     Create a query to delete the duplicate rows in the "customers" table.
+    Step 0: We gonna delete the duplicate rows in the "customers" table, so
+            we need to backup the "customers" table in a temporary table
+            named "customers_backup" to be able to restore it if needed.
     Step 1: Create a temporary table named "tmp_customers" with the distinct
             rows of the "customers" table.
     Step 2: Truncate the "customers" table.
@@ -58,6 +61,11 @@ def create_query() -> str:
 
     query = (
         """
+        CREATE TEMP TABLE customers_backup AS
+        (
+            SELECT * FROM customers
+        );
+
         CREATE TEMP TABLE tmp_customers AS
         (
             SELECT DISTINCT *
@@ -72,6 +80,7 @@ def create_query() -> str:
         );
 
         DROP TABLE tmp_customers;
+        DROP TABLE customers_backup;
         """
     )
     print(query)
@@ -107,5 +116,13 @@ if __name__ == "__main__":
     except Exception as error:
         print("Error:", error)
 
+# In the customers table :
+
 # Before: 16_536_158 rows
 # After:  15_667_350 rows
+
+# Diff example (user_id, count(user_id):
+# Before:
+# < "622009915","53"
+# After:
+# > "622009915","43"
