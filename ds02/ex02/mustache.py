@@ -70,8 +70,12 @@ def create_query_2() -> str:
                 customers
             WHERE
                 event_type = 'purchase'
+                AND event_time < '2023-02-01'
+                AND price > 0
             GROUP BY
-                user_id, user_session
+                user_id, event_time
+            ORDER BY
+                user_id ASC
         ),
         average_basket_prices AS (
             SELECT
@@ -89,25 +93,6 @@ def create_query_2() -> str:
             average_basket_prices;
 
         """
-        # """
-        # ALTER TABLE customers
-        # ADD COLUMN avg_basket_price FLOAT;
-
-        # UPDATE customers
-        # SET avg_basket_price = subquery.avg_basket_price
-        # FROM (
-        #     SELECT
-        #         user_id,
-        #         SUM(price) / COUNT(DISTINCT user_session) AS avg_basket_price
-        #     FROM customers
-        #     WHERE
-        #         event_type = 'purchase' AND
-        #         event_time < '2023-02-01' AND
-        #         price > 0
-        #     GROUP BY user_id
-        # ) AS subquery
-        # WHERE customers.user_id = subquery.user_id;
-        # """
     )
     print(query)
     return query
@@ -181,31 +166,10 @@ def box_plot_without_outliers(dataframe: pandas.DataFrame) -> None:
     plt.show()
 
 
-def main():
-
-    # data = fetch_data(1)
-
-    # complete_df = pandas.DataFrame(
-    #     data,
-    #     columns=['event_time', 'price', 'user_id']
-    # )
-
-    # dataframe = complete_df["price"]
-    # print(dataframe.describe())
-
-    # box_plot_with_outliers(dataframe)
-
-    # box_plot_without_outliers(dataframe)
-
-    # TODO : Last box_plot, but I don't know which data to use now.
-    # Box plot with the average basket price per user
-
-    data = fetch_data(2)
-
-    dataframe = pandas.DataFrame(
-        data,
-        columns=['id', 'avg']
-    )
+def box_plot_avg(dataframe: pandas.DataFrame) -> None:
+    """
+    Create a box plot without outliers.
+    """
 
     plt.title("Average basket price per user")
     plt.boxplot(
@@ -217,6 +181,34 @@ def main():
         autorange=True,         # Automatic range.
     )
     plt.show()
+
+
+def main():
+
+    data = fetch_data(1)
+
+    complete_df = pandas.DataFrame(
+        data,
+        columns=['event_time', 'price', 'user_id']
+    )
+
+    dataframe = complete_df["price"]
+    print(dataframe.describe())
+
+    box_plot_with_outliers(dataframe)
+
+    box_plot_without_outliers(dataframe)
+
+    # wtf w/ the subject last plot ?
+
+    data = fetch_data(2)
+
+    dataframe = pandas.DataFrame(
+        data,
+        columns=['id', 'avg']
+    )
+
+    box_plot_avg(dataframe)
 
 
 if __name__ == "__main__":

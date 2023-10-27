@@ -42,26 +42,49 @@ def load_env(dotenv_path: str) -> tuple:
     return environment_variables
 
 
-def create_query() -> str:
+def create_query_1() -> str:
     """
     """
 
     query = (
         """
-        SELECT
-            user_id,
-            SUM(price) AS n_purchase
-        FROM customers
-        WHERE event_type = 'purchase' AND event_time < '2023-02-01'
-        GROUP BY user_id
-        HAVING SUM(price) <= 250;
+            SELECT
+                user_id,
+                COUNT(*)
+            FROM
+                customers
+            WHERE
+                event_type = 'purchase'
+            GROUP BY
+                user_id
         """
     )
     print(query)
     return query
 
 
-def fetch_data() -> list:
+def create_query_2() -> str:
+    """
+    """
+
+    query = (
+        """
+            SELECT
+                user_id,
+                SUM(price)
+            FROM
+                customers
+            WHERE
+                event_type = 'purchase'
+            GROUP BY
+                user_id;
+        """
+    )
+    print(query)
+    return query
+
+
+def fetch_data(querry_number: int) -> list:
     (host, database, username, password, port) = load_env(
         "../../postgresql_docker/.env_postgres"
     )
@@ -74,7 +97,12 @@ def fetch_data() -> list:
         port=port
     )
 
-    query = create_query()
+    querries = {
+        1: create_query_1,
+        2: create_query_2
+    }
+
+    query = querries[querry_number]()
     cursor = connection.cursor()
     cursor.execute(query)
     data = cursor.fetchall()
@@ -86,25 +114,45 @@ def fetch_data() -> list:
 
 def main():
 
-    data = fetch_data()
+    data = fetch_data(1)
 
     dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
-    # Plot a bar chart with the number of orders according to the frequency
 
+    # Drop the line where frequency > 40
+    dataframe = dataframe.where(
+        dataframe["frequency"] <= 40
+    )
     print(dataframe)
 
-    # x : Frequency : count of orders per customer
-    x = dataframe['frequency']
-
+    # Plot a bar chart with the number of orders according to the frequency
+    # frequency distribution of the number of orders per customer
     plt.title("Frequency distribution of the number of orders per customer")
-
+    plt.hist(dataframe['frequency'], bins=5, edgecolor='white')
     plt.xlabel("Number of orders")
     plt.ylabel("Count of customers")
-
-    plt.hist(x, bins=5, edgecolor='white')
-
     plt.grid(alpha=0.75)
+    plt.show()
 
+    data = fetch_data(2)
+
+    dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
+
+    # Drop the line where frequency > 40
+    dataframe = dataframe.where(
+        dataframe["frequency"] <= 250
+    )
+    print(dataframe)
+
+    # Plot a bar chart with the number of orders according to the frequency
+    # frequency distribution of the number of orders per customer
+    plt.title("Frequency distribution of the number of orders per customer")
+    plt.bar(
+        x=dataframe["frequency"],
+        height=dataframe['id']
+    )
+    plt.xlabel("Number of orders")
+    plt.ylabel("Count of customers")
+    plt.grid(alpha=0.75)
     plt.show()
 
 
