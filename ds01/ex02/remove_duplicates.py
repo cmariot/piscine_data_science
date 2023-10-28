@@ -14,7 +14,6 @@ import os
 from dotenv import load_dotenv
 import psycopg2
 
-
 # You must delete the duplicate rows in the "customers" table.
 # Warning : Sometimes the server sends the same instruction
 #           with 1 second interval
@@ -66,20 +65,13 @@ def create_query() -> str:
             SELECT * FROM customers
         );
 
-        CREATE TEMP TABLE tmp_customers AS
-        (
-            SELECT DISTINCT *
-                FROM customers
-        );
-
         TRUNCATE TABLE customers;
 
         INSERT INTO customers
         (
-            SELECT * FROM tmp_customers
+            SELECT DISTINCT * FROM customers_backup
         );
 
-        DROP TABLE tmp_customers;
         DROP TABLE customers_backup;
         """
     )
@@ -115,14 +107,3 @@ if __name__ == "__main__":
         main()
     except Exception as error:
         print("Error:", error)
-
-# In the customers table :
-
-# Before: 16_536_158 rows
-# After:  15_667_350 rows
-
-# Diff example (user_id, count(user_id):
-# Before:
-# < "622009915","53"
-# After:
-# > "622009915","43"
