@@ -106,6 +106,11 @@ def main():
         inplace=True
     )
 
+    customers.sort_values(
+        by=["event_time", "user_id"],
+        inplace=True
+    )
+
     print(
         "Customers table without duplicates :\n",
         customers,
@@ -209,7 +214,8 @@ if __name__ == "__main__":
 
 # -> plus de doublons, mais un nombre de lignes different de 18_525_251 attendu
 
-# SELECT * FROM customers
+# SELECT *
+# FROM customers
 # WHERE event_time = '2023-02-28 23:42:29+00:00'
 #     AND event_type ='remove_from_cart'
 #     AND product_id = '5692888'

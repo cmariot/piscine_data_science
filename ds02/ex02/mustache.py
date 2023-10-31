@@ -70,12 +70,8 @@ def create_query_2() -> str:
                 customers
             WHERE
                 event_type = 'purchase'
-                AND event_time < '2023-02-01'
-                AND price > 0
             GROUP BY
-                user_id, event_time
-            ORDER BY
-                user_id ASC
+                user_id, user_session
         ),
         average_basket_prices AS (
             SELECT
@@ -91,7 +87,6 @@ def create_query_2() -> str:
             avg_basket_price
         FROM
             average_basket_prices;
-
         """
     )
     print(query)
@@ -173,12 +168,12 @@ def box_plot_avg(dataframe: pandas.DataFrame) -> None:
 
     plt.title("Average basket price per user")
     plt.boxplot(
-        x=dataframe["avg"],     # Array to be plotted.
-        vert=False,             # Vertical or horizontal.
-        patch_artist=True,      # Fill with color.
-        showfliers=False,       # Show the outliers.
-        labels=["Purchase"],    # Tick labels.
-        autorange=True,         # Automatic range.
+        x=dataframe["avg"],                 # Array to be plotted.
+        vert=False,                         # Vertical or horizontal.
+        patch_artist=True,                  # Fill with color.
+        showfliers=True,                   # Show the outliers.
+        labels=["Average basket price"],    # Tick labels.
+        autorange=True,                     # Automatic range.
     )
     plt.show()
 
@@ -216,22 +211,3 @@ if __name__ == "__main__":
         main()
     except Exception as error:
         print("Error:", error)
-
-
-# Act like my data analyst assistant.
-
-# I want to plot a box plot of the average basket_price per customer.
-# My data is stored in a postgresql database,
-# the customers table has different columns :
-# - event_time : date of the event
-# - event_type : type of event (view, cart, remove from cart, purchase)
-# - product_id : id of the product assiociated with the event
-# - price : price of ONE product associated with an event
-# - user_id : id of the user who made the action
-# - user_session : uuid of the user session
-
-# Makes a Postgresql query to get the average basket_price per customer with
-# the customers table.
-# First you must you must compute the basket price based on the price of the
-# products associated with the purchase events.
-# Then you must compute the average basket price per customer.

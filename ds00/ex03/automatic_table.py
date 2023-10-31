@@ -68,12 +68,12 @@ def create_query(table_name: str, path: str) -> str:
         DROP TABLE IF EXISTS {table_name};
         CREATE TABLE {table_name}
         (
-            event_time      TIMESTAMP WITH TIME ZONE NOT NULL,
+            event_time      TIMESTAMP WITH TIME ZONE,
             event_type      VARCHAR(32),
             product_id      INTEGER,
             price           FLOAT,
             user_id         BIGINT,
-            user_session    UUID
+            user_session    TEXT
         );
         COPY {table_name} FROM '{path}' CSV HEADER;
         """
