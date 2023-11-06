@@ -51,7 +51,15 @@ def create_query() -> str:
 
     query = (
         """
-        SELECT * FROM customers;
+        SELECT
+            COUNT(user_id) AS nb_orders,
+            SUM(price) AS total_spent,
+            AVG(price) AS avg_spent,
+            MIN(price) AS min_spent,
+            MAX(price) AS max_spent
+        FROM customers
+        WHERE event_type = 'purchase'
+        GROUP BY user_id;
         """
     )
     print(query)
@@ -88,36 +96,51 @@ def main():
     customers = pandas.DataFrame(
         data,
         columns=[
-            "event_time",
-            "event_type",
-            "product_id",
-            "price",
-            "user_id",
-            "user_session"
+            'nb_orders',
+            'total_spent',
+            'avg_spent',
+            'min_spent',
+            'max_spent'
         ]
     )
 
-    print(customers.head())
+    print(customers.head(), "\n")
 
+    # Inertia can be recognized as a measure of how internally coherent
+    # clusters are.
     inertia = []
     max_clusters = 10
-    for n_clusters in range(1, max_clusters):
+    for n_clusters in range(1, max_clusters + 1):
 
         print(f"Clustering step {n_clusters}/{max_clusters}")
 
         kmean = KMeans(
             n_clusters=n_clusters,
             max_iter=1000,
-
+            n_init=10,
         )
         kmean.fit(customers)
         inertia.append(kmean.inertia_)
 
+        # Plot the data with the clusters with a 3D graph
+        # ax = plt.figure().add_subplot(projection='3d')
+        # ax.scatter(
+        #     customers['nb_orders'],
+        #     customers['total_spent'],
+        #     customers['avg_spent'],
+        #     c=kmean.labels_
+        # )
+        # plt.show()
+
     # Plot the inertia depending on the number of clusters
     # to find the optimal number of clusters
-    # Elbow method
-
-    plt.plot(range(1, max_clusters), inertia)
+    plt.title("Inertia depending on the number of clusters")
+    plt.plot(
+        range(1, max_clusters + 1),
+        inertia
+    )
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Inertia")
     plt.show()
 
 

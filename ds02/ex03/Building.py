@@ -50,13 +50,17 @@ def create_query_1() -> str:
         """
             SELECT
                 user_id,
-                COUNT(*)
+                COUNT(*) AS frequency
             FROM
                 customers
             WHERE
                 event_type = 'purchase'
             GROUP BY
-                user_id;
+                user_id
+            HAVING
+                COUNT(*) < 40
+            ORDER BY
+                COUNT(*) ASC;
         """
     )
     print(query)
@@ -71,14 +75,17 @@ def create_query_2() -> str:
         """
             SELECT
                 user_id,
-                SUM(price)
+                SUM(price) AS spent
             FROM
                 customers
             WHERE
                 event_type = 'purchase'
             GROUP BY
                 user_id
-            HAVING SUM(price) < 225;
+            HAVING
+                SUM(price) < 225
+            ORDER BY
+                SUM(price) ASC;
         """
     )
     print(query)
@@ -116,13 +123,7 @@ def fetch_data(querry_number: int) -> list:
 def main():
 
     data = fetch_data(1)
-
     dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
-
-    # Drop the line where frequency > 40
-    dataframe = dataframe.where(
-        dataframe["frequency"] <= 40
-    )
     print(dataframe)
 
     # Plot a bar chart with the number of orders according to the frequency
@@ -135,9 +136,7 @@ def main():
     plt.show()
 
     data = fetch_data(2)
-
     dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
-
     print(dataframe)
 
     plt.title("Frequency distribution of the purchase prices per customer")
