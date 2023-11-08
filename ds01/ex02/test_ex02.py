@@ -195,6 +195,8 @@ if __name__ == "__main__":
 # toutes les colonnes et conserver une ligne parmi les doublons.
 
 # Le nombre de lignes dans la table customers sans doublons est de 19_583_742.
+# -> plus de doublons, mais un nombre de lignes different de 18_525_251 attendu
+
 
 # SELECT   COUNT(*) AS nb_doublon,
 #          event_time,
@@ -212,13 +214,35 @@ if __name__ == "__main__":
 #          event_type
 # HAVING COUNT(*) > 1
 
-# -> plus de doublons, mais un nombre de lignes different de 18_525_251 attendu
 
-# SELECT *
-# FROM customers
-# WHERE event_time = '2023-02-28 23:42:29+00:00'
-#     AND event_type ='remove_from_cart'
-#     AND product_id = '5692888'
-#     AND price = '7.29'
-#     AND user_id = '548866558'
-#     AND user_session = '199869f5-3a22-4a47-8678-7c343d09bb8e'
+# Occurence x1 :
+# SELECT   *
+# FROM     customers
+# WHERE event_time = '2022-10-01 00:47:24+00'
+# AND user_id = '554342223'
+# AND user_session = '0b974342-1a53-41c1-a426-23130e770f4b'
+# AND product_id = '5712993'
+# AND price = '2.7'
+# AND event_type = 'view'
+
+
+# Occurence x2 :
+# SELECT   *
+# FROM     customers
+# WHERE event_time = '2022-10-01 07:31:37+00'
+# AND user_id = '555529002'
+# AND user_session = '91ab31d3-60c9-4138-b7f6-cf68da91d420'
+# AND product_id = '5888961'
+# AND price = '5.24'
+# AND event_type = 'remove_from_cart'
+
+
+# Occurence x3 :
+# SELECT   *
+# FROM     customers
+# WHERE event_time = '2022-10-04 07:36:25+00'
+# AND user_id = '445003564'
+# AND user_session = '0072b066-23b7-42f5-bdb5-fe6021cd5176'
+# AND product_id = '5843836'
+# AND price = '0.38'
+# AND event_type = 'cart'

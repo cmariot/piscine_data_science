@@ -26,9 +26,12 @@ def plot_train_histograms(dataset):
     fig.subplots_adjust(wspace=0.5, hspace=0.5)
     i = j = 0
     for feature in dataset.columns:
-        axes[i][j].hist(sith[feature], bins=42, alpha=0.5, color="red")
-        axes[i][j].hist(jedi[feature], bins=42, alpha=0.5, color="blue")
+        axes[i][j].hist(jedi[feature], label="Jedi", bins=42,
+                        alpha=0.5, color="blue")
+        axes[i][j].hist(sith[feature], label="Sith", bins=42,
+                        alpha=0.5, color="red")
         axes[i][j].set_title(feature, fontsize=10)
+        axes[i][j].legend(loc="upper right", fontsize=6)
         i += 1 if j == 4 else 0
         j = 0 if j == 4 else j + 1
     plt.show()
@@ -40,8 +43,10 @@ def plot_test_histograms(dataset):
     fig.subplots_adjust(wspace=0.5, hspace=0.5)
     i = j = 0
     for feature in dataset.columns:
-        axes[i][j].hist(dataset[feature], bins=42, alpha=0.5, color="green")
+        axes[i][j].hist(dataset[feature], label="Knight",
+                        bins=42, alpha=0.5, color="green")
         axes[i][j].set_title(feature, fontsize=10)
+        axes[i][j].legend(loc="upper right", fontsize=6)
         i += 1 if j == 4 else 0
         j = 0 if j == 4 else j + 1
     plt.show()

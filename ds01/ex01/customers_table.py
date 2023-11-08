@@ -109,7 +109,7 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
     # The query looks like this:
 
     # DROP TABLE IF EXISTS customers;
-    # CREATE TABLE IF NOT EXISTS customers AS
+    # CREATE TABLE customers AS
     # (
     #     SELECT * FROM data_2022_oct
     # )
@@ -124,6 +124,10 @@ def create_query(cursor: psycopg2.extensions.cursor) -> str:
     # UNION ALL
     # (
     #     SELECT * FROM data_2022_dec
+    # )
+    # UNION ALL
+    # (
+    #     SELECT * FROM data_2023_feb
     # );
 
     # UNION ALL is faster than UNION because it does not remove duplicates.
@@ -158,5 +162,3 @@ if __name__ == "__main__":
         main()
     except Exception as error:
         print("Error:", error)
-
-

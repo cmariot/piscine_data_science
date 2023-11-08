@@ -63,6 +63,9 @@ def main():
     # Print the correlation table without the index.
     print(correlation.to_string(index=False))
 
+    print("\n\n")
+    print(dataset_train.corr()["knight"].sort_values(ascending=False))
+
 
 if __name__ == "__main__":
     try:

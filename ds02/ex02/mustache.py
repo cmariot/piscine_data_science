@@ -54,7 +54,7 @@ def create_query_1() -> str:
             WHERE event_type = 'purchase' AND event_time < '2023-02-01';
         """
     )
-    print(query)
+    print("Query used to fetch the data for the first two plots:\n", query)
     return query
 
 
@@ -62,34 +62,25 @@ def create_query_2() -> str:
 
     query = (
         """
-        WITH basket_prices AS (
-            SELECT
-                user_id,
-                SUM(price) AS purchase_prices
-            FROM
-                customers
-            WHERE
-                event_type = 'purchase'
-            GROUP BY
-                user_id, user_session
+        WITH baskets AS (
+            SELECT user_id,
+                   SUM(price) AS basket_price
+            FROM customers
+            WHERE event_type = 'purchase'
+            GROUP BY user_id, event_time
         ),
         average_basket_prices AS (
-            SELECT
-                user_id,
-                AVG(purchase_prices) AS avg_basket_price
-            FROM
-                basket_prices
-            GROUP BY
-                user_id
+            SELECT user_id,
+                   AVG(basket_price) AS avg_basket_price
+            FROM baskets
+            GROUP BY user_id
         )
-        SELECT
-            user_id,
-            avg_basket_price
-        FROM
-            average_basket_prices;
+        SELECT user_id,
+               avg_basket_price
+        FROM average_basket_prices;
         """
     )
-    print(query)
+    print("\nQuery used to fetch the data for the last plot:\n", query)
     return query
 
 
@@ -168,12 +159,12 @@ def box_plot_avg(dataframe: pandas.DataFrame) -> None:
 
     plt.title("Average basket price per user")
     plt.boxplot(
-        x=dataframe["avg"],                 # Array to be plotted.
-        vert=False,                         # Vertical or horizontal.
-        patch_artist=True,                  # Fill with color.
-        showfliers=True,                   # Show the outliers.
-        labels=["Average basket price"],    # Tick labels.
-        autorange=True,                     # Automatic range.
+        x=dataframe,                      # Array to be plotted.
+        vert=False,                       # Vertical or horizontal.
+        patch_artist=True,                # Fill with color.
+        showfliers=True,                  # Show the outliers.
+        labels=["Average basket price"],  # Tick labels.
+        autorange=True,                   # Automatic range.
     )
     plt.show()
 
@@ -203,7 +194,7 @@ def main():
         columns=['id', 'avg']
     )
 
-    box_plot_avg(dataframe)
+    box_plot_avg(dataframe["avg"])
 
 
 if __name__ == "__main__":
