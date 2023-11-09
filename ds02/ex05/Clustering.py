@@ -119,31 +119,33 @@ def main():
     # Create a new dataframe grouped by user_id and with :
 
     # Convert event_time into an integer, the minimum value is 0, each day is 1
-    max_date = customers["event_time"].max()
+    min_date = customers["event_time"].min()
     customers["event_time"] = customers["event_time"].apply(
-        lambda x: (max_date - x).days + 1
+        lambda x: (x - min_date).days + 1
     )
 
     customers = customers.groupby("user_id")
 
     customers = customers.agg(
-        recency=("event_time", "min"),
+        recency=("event_time", "max"),
         frequency=("event_time", "count"),
         monetary=("price", "sum")
     )
 
+    print(customers)
+
     # Clustering
     # K-means algorithm
-    KMeans_model = KMeans(n_clusters=5, n_init=10, max_iter=5_000)
+    KMeans_model = KMeans(n_clusters=5, n_init=10, max_iter=50_000)
     KMeans_model.fit(customers)
     customers["cluster"] = KMeans_model.predict(customers)
 
     status = [
-        "New customer",
-        "Inactive customer",
-        "Silver customer",
-        "Gold customer",
-        "Platinum customer"
+        "New customer",         #
+        "Potential Loyalists",  #
+        "Champions",            #
+        "Can’t Lose Them",      #
+        "At Risk Customers"     #
     ]
 
     customers["status"] = customers["cluster"].apply(
@@ -190,21 +192,21 @@ def main():
     ax[1].set_ylabel("Monetary")
 
     ax[2].scatter(
-        customers["monetary"],
         customers["recency"],
+        customers["monetary"],
         c=customers["cluster"],
         alpha=0.25,
     )
     # Plot the centroids
     ax[2].scatter(
-        KMeans_model.cluster_centers_[:, 2],
         KMeans_model.cluster_centers_[:, 0],
+        KMeans_model.cluster_centers_[:, 2],
         c='red',
         s=50,
         alpha=0.5
     )
-    ax[2].set_xlabel("Monetary")
-    ax[2].set_ylabel("Recency")
+    ax[2].set_xlabel("Recency")
+    ax[2].set_ylabel("Monetary")
 
     # Sort the clusters
     # cluster 0: New customer
@@ -249,9 +251,26 @@ def main():
     plt.title("Customers clustering")
     plt.show()
 
+    # 4D Plot
+    fig = plt.figure(figsize=(20, 10))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(
+        customers["recency"],
+        customers["frequency"],
+        customers["monetary"],
+        c=customers["cluster"],
+        alpha=0.25
+    )
+    ax.set_xlabel("Recency")
+    ax.set_ylabel("Frequency")
+    ax.set_zlabel("Monetary")
+    plt.show()
+
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as error:
         print("Error:", error)
+
+# https://clevertap.com/blog/rfm-analysis/

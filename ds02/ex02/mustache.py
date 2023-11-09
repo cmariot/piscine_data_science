@@ -154,7 +154,7 @@ def box_plot_without_outliers(dataframe: pandas.DataFrame) -> None:
 
 def box_plot_avg(dataframe: pandas.DataFrame) -> None:
     """
-    Create a box plot without outliers.
+    Create a box plot of the average basket price per user.
     """
 
     plt.title("Average basket price per user")

@@ -16,8 +16,8 @@
 import os
 from dotenv import load_dotenv
 import psycopg2
-import pandas
 import matplotlib.pyplot as plt
+import pandas
 
 from sklearn.cluster import KMeans
 
@@ -52,14 +52,16 @@ def create_query() -> str:
     query = (
         """
         SELECT
-            COUNT(user_id) AS nb_orders,
-            SUM(price) AS total_spent,
-            AVG(price) AS avg_spent,
-            MIN(price) AS min_spent,
-            MAX(price) AS max_spent
+            user_id,
+            event_time,
+            price
         FROM customers
         WHERE event_type = 'purchase'
-        GROUP BY user_id;
+        GROUP BY
+            user_id,
+            event_time,
+            price
+        ORDER BY user_id;
         """
     )
     print(query)
@@ -96,13 +98,35 @@ def main():
     customers = pandas.DataFrame(
         data,
         columns=[
-            'nb_orders',
-            'total_spent',
-            'avg_spent',
-            'min_spent',
-            'max_spent'
+            "user_id",
+            "event_time",
+            "price"
         ]
     )
+    # Convert event_time into an integer, the minimum value is 0, each day is 1
+    max_date = customers["event_time"].max()
+    customers["event_time"] = customers["event_time"].apply(
+        lambda x: (max_date - x).days + 1
+    )
+
+    customers = customers.groupby("user_id")
+
+    customers = customers.agg(
+        recency=("event_time", "min"),
+        frequency=("event_time", "count"),
+        monetary=("price", "sum")
+    )
+
+    # customers = pandas.DataFrame(
+    #     data,
+    #     columns=[
+    #         'nb_orders',
+    #         'total_spent',
+    #         'avg_spent',
+    #         'min_spent',
+    #         'max_spent'
+    #     ]
+    # )
 
     print(customers.head(), "\n")
 

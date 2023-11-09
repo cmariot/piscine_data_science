@@ -124,10 +124,8 @@ def main():
 
     data = fetch_data(1)
     dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
-    print(dataframe)
 
-    # Plot a bar chart with the number of orders according to the frequency
-    # frequency distribution of the number of orders per customer
+    # Plot a bar chart with the number of orders per customer distribution
     plt.title("Frequency distribution of the number of orders per customer")
     plt.hist(dataframe['frequency'], bins=5, edgecolor='white')
     plt.xlabel("Number of orders")
@@ -137,8 +135,8 @@ def main():
 
     data = fetch_data(2)
     dataframe = pandas.DataFrame(data, columns=['id', 'frequency'])
-    print(dataframe)
 
+    # Plot a bar chart with the $ spent per user distribution
     plt.title("Frequency distribution of the purchase prices per customer")
     plt.hist(dataframe['frequency'], bins=5, edgecolor='white')
     plt.xlabel("Monetary value in Altairian Dollars (A$)")
